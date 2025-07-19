@@ -1,0 +1,7 @@
+{
+  "name": "miles-dreams",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
