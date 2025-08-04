@@ -1,39 +1,52 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
-import TabsPage from '../views/TabsPage.vue'
+import Home from '@/views/Home.vue';
+import Settings from '@/views/Settings.vue';
+import Points from '@/views/Points.vue';
+import Offers from '@/views/Offers.vue';
+import Chat from '@/views/Chat.vue';
+import TabsComponent from '@/components/TabsComponent.vue'
+import NotFoundComponent from '@/components/NotFoundComponent.vue';
 
-const routes: Array<RouteRecordRaw> = [
+const routes = [
+  { path: '/', redirect: '/tabs/home' },
   {
-    path: '/',
-    redirect: '/tabs/tab1'
-  },
-  {
-    path: '/tabs/',
-    component: TabsPage,
+    path: '/tabs',
+    component: TabsComponent,
     children: [
       {
-        path: '',
-        redirect: '/tabs/tab1'
+        path: '/tabs/home',
+        name: 'Home',
+        component: Home
+      },
+
+      {
+        path: '/tabs/settings',
+        name: 'Settings',
+        component: Settings
       },
       {
-        path: 'tab1',
-        component: () => import('@/views/Tab1Page.vue')
+        path: '/tabs/points',
+        name: 'Points',
+        component: Points
       },
       {
-        path: 'tab2',
-        component: () => import('@/views/Tab2Page.vue')
+        path: '/tabs/offers',
+        name: 'Offers',
+        component: Offers
       },
       {
-        path: 'tab3',
-        component: () => import('@/views/Tab3Page.vue')
-      }
+        path: '/tabs/chat',
+        name: 'Chat',
+        component: Chat
+      },
     ]
-  }
+  },
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFoundComponent }
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
-})
+});
 
-export default router
+export default router;
