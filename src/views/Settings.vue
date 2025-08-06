@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import { IonPage, IonHeader, IonContent, IonCard, IonCardTitle, IonCardSubtitle, IonList, IonItem, IonLabel } from '@ionic/vue';
+import { useRouter } from "vue-router";
+import { IonPage, IonContent, IonCard, IonCardTitle, IonList, IonItem, IonLabel } from '@ionic/vue';
 import NavbarComponent from '@/components/NavbarComponent.vue';
 import { Edit, Help, BuildingCommunity, Logout } from '@vicons/tabler';
+
+const router = useRouter();
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  router.push({ path: "/login" });
+};
 
 const user = {
   name: "Iara Costa",
@@ -42,7 +50,7 @@ const user = {
         </ion-item>
         <ion-item button lines="none">
           <Logout class="icon-item" />
-          <ion-label>Sair</ion-label>
+          <ion-label @click="handleLogout">Sair</ion-label>
         </ion-item>
       </ion-list>
 
