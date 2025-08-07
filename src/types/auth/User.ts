@@ -5,4 +5,7 @@ export type User = {
     username: string;
     email: string;
     password: string;
+    firtQuestionAnswer: string;
+    secoundQuestionAnswer: string;
+    trirdQuestionAnswer: string;
 };

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { AuthService } from "@/services/auth/AuthService";
 import router from "@/router/index.ts";
 import { useRoute } from "vue-router";
 import { Login } from "@/types/auth/Login";
 import { User } from "@/types/auth/User";
+import { RecoverPassword } from "@/types/auth/RecoverPassword";
 import { clearObject } from "@/utils-functions/clearObject";
 import {
   IonPage,
@@ -22,15 +23,17 @@ import {
   IonHeader,
   IonButtons,
   IonToolbar,
-  IonTitle
+  IonTitle,
 } from "@ionic/vue";
 import { searchSharp } from "ionicons/icons";
 
 const route = useRoute();
 const authService = new AuthService();
-const dataRpaUser = ref<User>();
+const dataRpaUser = ref<User | undefined>(undefined);
+const dataUser = ref<User>();
 const loadingLogin = ref(false);
 const loadingRpaUser = ref(false);
+const loadingUser = ref(false);
 const loadingRegister = ref(false);
 const isLogin = ref(true);
 const messageWarning = ref();
@@ -38,6 +41,10 @@ const showToast = ref(false);
 const buttonRegister = ref(true);
 const showInfoForgotPasswordModal = ref(false);
 const confirmPassword = ref("");
+const stepRegister = ref(1);
+const checkFirtQuestionAnswer = ref("");
+const checkSecoundQuestionAnswer = ref("");
+const checkTrirdQuestionAnswer = ref("");
 const paramLogin = ref<Login>({
   username: "",
   password: "",
@@ -49,6 +56,16 @@ const paramUser = ref<User>({
   username: "",
   email: "",
   password: "",
+  firtQuestionAnswer: "",
+  secoundQuestionAnswer: "",
+  trirdQuestionAnswer: "",
+});
+
+const paramRecoverPassword = ref<RecoverPassword>({
+  email: "",
+  firtQuestionAnswer: "",
+  secoundQuestionAnswer: "",
+  trirdQuestionAnswer: "",
 });
 
 const authLogin = async () => {
@@ -80,7 +97,6 @@ const loadRpaUser = async () => {
     loadingRpaUser.value = true;
     const data = await authService.loadRpaUserService(paramUser.value.email);
     dataRpaUser.value = data;
-    console.log(dataRpaUser.value);
     if (dataRpaUser.value) {
       paramUser.value.name = dataRpaUser.value.name;
       paramUser.value.lastname = dataRpaUser.value.lastname;
@@ -103,6 +119,35 @@ const loadRpaUser = async () => {
   }
 };
 
+const loadUser = async () => {
+  try {
+    loadingUser.value = true;
+    const data = await authService.loadUserService(paramRecoverPassword.value.email);
+    dataUser.value = data;
+    if (dataUser.value) {
+      console.log(dataUser.value);
+      checkFirtQuestionAnswer.value = dataUser.value.firtQuestionAnswer;
+      checkSecoundQuestionAnswer.value = dataUser.value.secoundQuestionAnswer;
+      checkTrirdQuestionAnswer.value = dataUser.value.trirdQuestionAnswer;
+      messageWarning.value = "Usuário encontrado.";
+      showToast.value = true;
+      buttonRegister.value = false;
+    }
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      messageWarning.value = "Nenhum usuário encontrado.";
+      showToast.value = true;
+    }
+    if (error.response?.status !== 401 && error.response?.status !== 404) {
+      messageWarning.value =
+        "Ocorreu um erro buscar usuário, por favor contate o administrador do sistema.";
+      showToast.value = true;
+    }
+  } finally {
+    loadingUser.value = false;
+  }
+};
+
 const authRegister = async () => {
   try {
     loadingRegister.value = true;
@@ -112,6 +157,10 @@ const authRegister = async () => {
       loadingRegister.value = false;
       buttonRegister.value = true;
       clearObject(paramUser.value);
+      confirmPassword.value = "";
+      handleRedirectToLogin();
+      dataRpaUser.value = undefined;
+      stepRegister.value = 1;
       messageWarning.value = "Cadastro realizado com sucesso!";
       showToast.value = true;
       router.push({ path: "/tabs/home" });
@@ -130,6 +179,75 @@ const authRegister = async () => {
   }
 };
 
+const sendMailRecoverPassword = async () => {
+  try {
+    let correctAnswers = 0;
+    if (
+      paramRecoverPassword.value.firtQuestionAnswer === dataUser.value?.firtQuestionAnswer
+    ) {
+      correctAnswers++;
+    }
+    if (
+      paramRecoverPassword.value.secoundQuestionAnswer ===
+      dataUser.value?.secoundQuestionAnswer
+    ) {
+      correctAnswers++;
+    }
+    if (
+      paramRecoverPassword.value.trirdQuestionAnswer ===
+      dataUser.value?.trirdQuestionAnswer
+    ) {
+      correctAnswers++;
+    }
+    if (correctAnswers >= 2) {
+      messageWarning.value = "Um e-mail para recuperação de senha enviado ao seu e-mail.";
+      showToast.value = true;
+    } else {
+      messageWarning.value =
+        "Você precisa acertar pelo menos 2 respostas para prosseguirmos";
+      showToast.value = true;
+    }
+  } catch (error: any) {
+    if (error.response?.status !== 401) {
+      messageWarning.value =
+        "Ocorreu um erro ao enviar e-mail de recuperação de senha, por favor contate o administrador do sistema.";
+      showToast.value = true;
+    }
+  } finally {
+    loadingRegister.value = false;
+  }
+};
+
+const isStepOneValid = computed(() => {
+  return (
+    paramUser.value.email &&
+    paramUser.value.username &&
+    paramUser.value.name &&
+    paramUser.value.lastname &&
+    paramUser.value.gender &&
+    paramUser.value.password &&
+    confirmPassword.value &&
+    paramUser.value.password === confirmPassword.value
+  );
+});
+
+const isStepTwoValid = computed(() => {
+  return (
+    paramUser.value.firtQuestionAnswer &&
+    paramUser.value.secoundQuestionAnswer &&
+    paramUser.value.trirdQuestionAnswer
+  );
+});
+
+const isStepRecoverPassword = computed(() => {
+  return (
+    paramRecoverPassword.value.email &&
+    paramRecoverPassword.value.firtQuestionAnswer &&
+    paramRecoverPassword.value.secoundQuestionAnswer &&
+    paramRecoverPassword.value.trirdQuestionAnswer
+  );
+});
+
 watch(
   () => paramUser.value.email,
   (newEmail) => {
@@ -142,7 +260,7 @@ watch(
   }
 );
 
-const handleLoginAndRegister = () => {
+const handleRedirectToLogin = () => {
   isLogin.value = !isLogin.value;
 };
 
@@ -175,12 +293,13 @@ onMounted(() => {
           }}
         </p>
 
-        <!-- LOGIN -->
+        <!-- ##################### LOGIN ##################### -->
         <div class="card-form" v-if="isLogin">
           <ion-item class="custom-input" lines="none">
             <ion-input
               type="text"
-              placeholder="Usuário"
+              placeholder="* Usuário"
+              :maxlength="100"
               v-model="paramLogin.username"
               class="input-field"
             />
@@ -189,7 +308,8 @@ onMounted(() => {
           <ion-item class="custom-input" lines="none">
             <ion-input
               type="password"
-              placeholder="Senha"
+              placeholder="* Senha"
+              :maxlength="100"
               v-model="paramLogin.password"
               class="input-field"
             >
@@ -211,24 +331,29 @@ onMounted(() => {
           </ion-button>
 
           <div class="card-footer">
-          <a href="#" @click.prevent="showInfoForgotPasswordModal = true" class="card-link">
-                Esqueceu sua senha ?
-              </a>
+            <a
+              href="#"
+              @click.prevent="showInfoForgotPasswordModal = true"
+              class="card-link"
+            >
+              Esqueceu sua senha ?
+            </a>
             <p>
               Ainda não tem uma conta ?
-              <a href="#" @click.prevent="handleLoginAndRegister" class="card-link">
+              <a href="#" @click.prevent="handleRedirectToLogin" class="card-link">
                 Regitre-se
               </a>
             </p>
           </div>
         </div>
 
-        <!-- REGISTRO -->
-        <div class="card-form" v-if="!isLogin">
+        <!-- ##################### REGISTER STEP 1 ##################### -->
+        <div class="card-form" v-if="!isLogin && stepRegister === 1">
           <ion-item class="custom-input" lines="none">
             <ion-input
               type="text"
-              placeholder="E-mail"
+              placeholder="* E-mail"
+              :maxlength="100"
               v-model="paramUser.email"
               class="input-field"
             >
@@ -242,38 +367,42 @@ onMounted(() => {
             </ion-input>
           </ion-item>
 
-          <ion-item class="custom-input" lines="none">
+          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
             <ion-input
               :disabled="true"
               type="text"
-              placeholder="Usuário"
+              placeholder="* Usuário"
+              :maxlength="100"
               v-model="paramUser.username"
               class="input-field"
             />
           </ion-item>
 
-          <ion-item class="custom-input" lines="none">
+          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
             <ion-input
               type="text"
-              placeholder="Nome"
+              placeholder="* Nome"
+              :maxlength="100"
               v-model="paramUser.name"
               class="input-field"
             />
           </ion-item>
 
-          <ion-item class="custom-input" lines="none">
+          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
             <ion-input
               type="text"
-              placeholder="Sobrenome"
+              placeholder="* Sobrenome"
+              :maxlength="100"
               v-model="paramUser.lastname"
               class="input-field"
             />
           </ion-item>
 
-          <ion-item class="custom-input custom-select" lines="none">
+          <ion-item class="custom-input custom-select" lines="none" v-if="dataRpaUser">
             <ion-select
               interface="action-sheet"
-              placeholder="Gênero"
+              placeholder="* Gênero"
+              :maxlength="100"
               v-model="paramUser.gender"
               class="select-field"
             >
@@ -282,10 +411,11 @@ onMounted(() => {
             </ion-select>
           </ion-item>
 
-          <ion-item class="custom-input" lines="none">
+          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
             <ion-input
               type="password"
-              placeholder="Senha"
+              placeholder="* Senha"
+              :maxlength="100"
               v-model="paramUser.password"
               class="input-field"
             >
@@ -293,10 +423,11 @@ onMounted(() => {
             </ion-input>
           </ion-item>
 
-          <ion-item class="custom-input" lines="none">
+          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
             <ion-input
               type="password"
-              placeholder="Confime a senha"
+              placeholder="* Confime a senha"
+              :maxlength="100"
               v-model="confirmPassword"
               class="input-field"
             >
@@ -308,8 +439,63 @@ onMounted(() => {
             expand="block"
             shape="round"
             class="card-button"
+            @click="stepRegister = 2"
+            :disabled="!isStepOneValid"
+          >
+            Próximo
+          </ion-button>
+
+          <div class="card-footer">
+            <p>
+              Já tem uma conta ?
+              <a href="#" @click.prevent="handleRedirectToLogin" class="card-link">
+                Entrar
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <!-- ##################### REGISTER STEP 2 ##################### -->
+        <div class="card-form" v-if="!isLogin && stepRegister === 2">
+          <p class="question-text">1) Qual o nome do seu animal de estimação ?</p>
+          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
+            <ion-input
+              type="text"
+              placeholder="* Resposta"
+              :maxlength="100"
+              v-model="paramUser.firtQuestionAnswer"
+              class="input-field"
+            />
+          </ion-item>
+
+          <p class="question-text">2) Qual o nome da sua cidade natal ?</p>
+          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
+            <ion-input
+              type="text"
+              placeholder="* Resposta"
+              :maxlength="100"
+              v-model="paramUser.secoundQuestionAnswer"
+              class="input-field"
+            />
+          </ion-item>
+
+          <p class="question-text">3) Qual o seu hobbie ?</p>
+          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
+            <ion-input
+              type="text"
+              placeholder="* Resposta"
+              :maxlength="100"
+              v-model="paramUser.trirdQuestionAnswer"
+              class="input-field"
+            />
+          </ion-item>
+
+          <ion-button
+            expand="block"
+            shape="round"
+            class="card-button"
             @click="authRegister()"
-            :disabled="buttonRegister"
+            :disabled="!isStepTwoValid"
           >
             <template v-if="loadingRegister">
               <ion-spinner name="crescent"></ion-spinner>
@@ -317,30 +503,122 @@ onMounted(() => {
             <template v-else> Registrar </template>
           </ion-button>
 
-          <div class="card-footer">
-            <p>
-              Já tem uma conta ?
-              <a href="#" @click.prevent="handleLoginAndRegister" class="card-link">
-                Entrar
-              </a>
-            </p>
-          </div>
+          <ion-button
+            expand="block"
+            shape="round"
+            fill="outline"
+            color="medium"
+            class="card-button"
+            @click="stepRegister = 1"
+          >
+            Voltar
+          </ion-button>
         </div>
 
-        <!-- MODAL FORGOT YOUR PASSWORD -->
+        <!-- ##################### MODAL RECOVER PASSWORD ##################### -->
         <ion-modal :is-open="showInfoForgotPasswordModal">
           <ion-header>
             <ion-toolbar>
               <ion-title>Recuperar senha</ion-title>
               <ion-buttons slot="end">
-                <ion-button @click="showInfoForgotPasswordModal = false">Fechar</ion-button>
+                <ion-button @click="showInfoForgotPasswordModal = false"
+                  >Fechar</ion-button
+                >
               </ion-buttons>
             </ion-toolbar>
           </ion-header>
           <ion-content class="ion-padding">
-            <div style="text-align:center; margin-top: 32px;">
-              <h2 style="margin-top: 16px;">Informe questões pessoais</h2>
-              <p>Qual o nome do seu cão ?</p>
+            <h5 class="modal-title">
+              Por questões de segurança, por favor preencha as informações abaixo:
+            </h5>
+
+            <p class="question-text">Qual o seu e-mail cadastrado ?</p>
+            <ion-item class="custom-input" lines="none">
+              <ion-input
+                type="text"
+                placeholder="* E-mail"
+                :maxlength="100"
+                v-model="paramRecoverPassword.email"
+                class="input-field"
+              >
+                <ion-icon
+                  slot="end"
+                  class="input-email-icon"
+                  :icon="searchSharp"
+                  aria-hidden="true"
+                  @click="loadUser()"
+                ></ion-icon>
+              </ion-input>
+            </ion-item>
+
+            <div v-if="dataUser">
+              <p class="question-text">1) Qual o nome do seu animal de estimação ?</p>
+              <ion-item class="custom-input custom-select" lines="none">
+                <ion-select
+                  v-model="paramRecoverPassword.firtQuestionAnswer"
+                  interface="action-sheet"
+                  placeholder="* Resposta"
+                  :maxlength="100"
+                  class="select-field"
+                >
+                  <ion-select-option value="Max">Max</ion-select-option>
+                  <ion-select-option value="Luna">Luna</ion-select-option>
+                  <ion-select-option :value="checkFirtQuestionAnswer">{{
+                    checkFirtQuestionAnswer
+                  }}</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <p class="question-text">2) Qual o nome da sua cidade natal ?</p>
+              <ion-item class="custom-input custom-select" lines="none">
+                <ion-select
+                  v-model="paramRecoverPassword.secoundQuestionAnswer"
+                  interface="action-sheet"
+                  placeholder="* Resposta"
+                  :maxlength="100"
+                  class="select-field"
+                >
+                  <ion-select-option value="masculino">Lisboa</ion-select-option>
+                  <ion-select-option value="feminino"
+                    >Rio Grande do Sul</ion-select-option
+                  >
+                  <ion-select-option :value="checkSecoundQuestionAnswer">{{
+                    checkSecoundQuestionAnswer
+                  }}</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <p class="question-text">3) Qual o seu hobbie ?</p>
+              <ion-item class="custom-input custom-select" lines="none">
+                <ion-select
+                  v-model="paramRecoverPassword.trirdQuestionAnswer"
+                  interface="action-sheet"
+                  placeholder="* Resposta"
+                  :maxlength="100"
+                  class="select-field"
+                >
+                  <ion-select-option value="masculino">Ler livros</ion-select-option>
+                  <ion-select-option value="feminino"
+                    >Passear no parque</ion-select-option
+                  >
+                  <ion-select-option :value="checkTrirdQuestionAnswer">{{
+                    checkTrirdQuestionAnswer
+                  }}</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <ion-button
+                expand="block"
+                shape="round"
+                class="card-button"
+                @click="sendMailRecoverPassword"
+                :disabled="!isStepRecoverPassword"
+              >
+                <template v-if="loadingRegister">
+                  <ion-spinner name="crescent"></ion-spinner>
+                </template>
+                <template v-else> Verificar </template>
+              </ion-button>
             </div>
           </ion-content>
         </ion-modal>
@@ -406,6 +684,10 @@ onMounted(() => {
   width: 100%;
 }
 
+.question-text {
+  font-size: 14px;
+}
+
 .custom-input {
   --background: var(--ion-color-light-shade);
   --border-radius: 12px;
@@ -427,6 +709,13 @@ onMounted(() => {
   color: #4d8dff;
   font-size: 20px;
 }
+
+.modal-title {
+  text-align: center;
+  margin-top: 32px;
+  margin-bottom: 40px;
+}
+
 .select-field {
   width: 100%;
   --placeholder-color: var(--ion-color-medium);

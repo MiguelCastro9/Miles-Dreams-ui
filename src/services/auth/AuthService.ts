@@ -34,4 +34,16 @@ export class AuthService {
       throw error;
     }
   }
+
+  public async loadUserService(email: string): Promise<User> {
+    try {
+      const res = await http.get("/auth/find-user", {
+        params: { email },
+      });
+      return res.data;
+    } catch (error: any) {
+      console.log(error);
+      throw error;
+    }
+  }
 }
