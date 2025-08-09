@@ -24,30 +24,36 @@ import {
   IonButtons,
   IonToolbar,
   IonTitle,
+  IonInputOtp
 } from "@ionic/vue";
 import { searchSharp } from "ionicons/icons";
 
 const route = useRoute();
 const authService = new AuthService();
 const dataRpaUser = ref<User | undefined>(undefined);
-const dataUser = ref<User>();
+const dataUser = ref<User | undefined>(undefined);
 const loadingLogin = ref(false);
 const loadingRpaUser = ref(false);
 const loadingUser = ref(false);
 const loadingRegister = ref(false);
 const isLogin = ref(true);
-const messageWarning = ref();
+const message = ref();
 const showToast = ref(false);
-const buttonRegister = ref(true);
-const showInfoForgotPasswordModal = ref(false);
 const confirmPassword = ref("");
+const confirmRecoverPassoword = ref("");
 const stepRegister = ref(1);
+const checkFirtQuestion = ref("");
 const checkFirtQuestionAnswer = ref("");
+const checkSecoundQuestion = ref("");
 const checkSecoundQuestionAnswer = ref("");
+const checkTrirdQuestion = ref("");
 const checkTrirdQuestionAnswer = ref("");
+const modalRecoverPassword = ref(false);
+const stepRecoverPassword = ref(1);
+
 const paramLogin = ref<Login>({
   username: "",
-  password: "",
+  password: ""
 });
 const paramUser = ref<User>({
   name: "",
@@ -56,9 +62,12 @@ const paramUser = ref<User>({
   username: "",
   email: "",
   password: "",
+  firtQuestion: "",
   firtQuestionAnswer: "",
+  secoundQuestion: "",
   secoundQuestionAnswer: "",
-  trirdQuestionAnswer: "",
+  trirdQuestion: "",
+  trirdQuestionAnswer: ""
 });
 
 const paramRecoverPassword = ref<RecoverPassword>({
@@ -66,6 +75,7 @@ const paramRecoverPassword = ref<RecoverPassword>({
   firtQuestionAnswer: "",
   secoundQuestionAnswer: "",
   trirdQuestionAnswer: "",
+  newPassword: ""
 });
 
 const authLogin = async () => {
@@ -77,12 +87,11 @@ const authLogin = async () => {
     router.push({ path: "/tabs/home" });
   } catch (error: any) {
     if (error.response?.status === 401) {
-      messageWarning.value = "Usuário ou senha inválidos.";
+      message.value = "Usuário ou senha inválidos.";
       showToast.value = true;
       clearObject(paramLogin.value);
     } else {
-      messageWarning.value =
-        "Ocorreu um erro no login, por favor contate o administrador do sistema.";
+      message.value = "Ocorreu um erro no login, por favor entre em contato conosco.";
       showToast.value = true;
       clearObject(paramLogin.value);
     }
@@ -101,17 +110,15 @@ const loadRpaUser = async () => {
       paramUser.value.name = dataRpaUser.value.name;
       paramUser.value.lastname = dataRpaUser.value.lastname;
       paramUser.value.gender = dataRpaUser.value.gender;
-      messageWarning.value = "Usuário encontrado, dados preenchidos.";
+      message.value = "Usuário encontrado, dados preenchidos.";
       showToast.value = true;
-      buttonRegister.value = false;
     } else {
-      messageWarning.value = "Nenhum usuário encontrado.";
+      message.value = "Nenhum usuário encontrado.";
       showToast.value = true;
     }
   } catch (error: any) {
     if (error.response?.status !== 401) {
-      messageWarning.value =
-        "Ocorreu um erro buscar usuário, por favor contate o administrador do sistema.";
+      message.value = "Ocorreu um erro buscar usuário, por favor entre em contato conosco.";
       showToast.value = true;
     }
   } finally {
@@ -125,22 +132,22 @@ const loadUser = async () => {
     const data = await authService.loadUserService(paramRecoverPassword.value.email);
     dataUser.value = data;
     if (dataUser.value) {
-      console.log(dataUser.value);
+      checkFirtQuestion.value = dataUser.value.firtQuestion;
       checkFirtQuestionAnswer.value = dataUser.value.firtQuestionAnswer;
+      checkSecoundQuestion.value = dataUser.value.secoundQuestion;
       checkSecoundQuestionAnswer.value = dataUser.value.secoundQuestionAnswer;
+      checkTrirdQuestion.value = dataUser.value.trirdQuestion;
       checkTrirdQuestionAnswer.value = dataUser.value.trirdQuestionAnswer;
-      messageWarning.value = "Usuário encontrado.";
+      message.value = "Usuário encontrado.";
       showToast.value = true;
-      buttonRegister.value = false;
     }
   } catch (error: any) {
     if (error.response?.status === 404) {
-      messageWarning.value = "Nenhum usuário encontrado.";
+      message.value = "Nenhum usuário encontrado.";
       showToast.value = true;
     }
     if (error.response?.status !== 401 && error.response?.status !== 404) {
-      messageWarning.value =
-        "Ocorreu um erro buscar usuário, por favor contate o administrador do sistema.";
+      message.value = "Ocorreu um erro buscar usuário, por favor entre em contato conosco.";
       showToast.value = true;
     }
   } finally {
@@ -151,27 +158,20 @@ const loadUser = async () => {
 const authRegister = async () => {
   try {
     loadingRegister.value = true;
-    if (paramUser.value.password === confirmPassword.value) {
-      const data = await authService.registerService(paramUser.value);
-      localStorage.setItem("token", data.token);
-      loadingRegister.value = false;
-      buttonRegister.value = true;
-      clearObject(paramUser.value);
-      confirmPassword.value = "";
-      handleRedirectToLogin();
-      dataRpaUser.value = undefined;
-      stepRegister.value = 1;
-      messageWarning.value = "Cadastro realizado com sucesso!";
-      showToast.value = true;
-      router.push({ path: "/tabs/home" });
-    } else {
-      messageWarning.value = "As senhas não conhecidem.";
-      showToast.value = true;
-    }
+    const data = await authService.registerService(paramUser.value);
+    localStorage.setItem("token", data.token);
+    loadingRegister.value = false;
+    clearObject(paramUser.value);
+    confirmPassword.value = "";
+    handleRedirectToLogin();
+    dataRpaUser.value = undefined;
+    stepRegister.value = 1;
+    message.value = "Cadastro realizado com sucesso!";
+    showToast.value = true;
+    router.push({ path: "/tabs/home" });
   } catch (error: any) {
     if (error.response?.status !== 401) {
-      messageWarning.value =
-        "Ocorreu um erro no registro, por favor contate o administrador do sistema.";
+      message.value = "Ocorreu um erro no registro, por favor entre em contato conosco.";
       showToast.value = true;
     }
   } finally {
@@ -179,38 +179,27 @@ const authRegister = async () => {
   }
 };
 
-const sendMailRecoverPassword = async () => {
+const sendMailToRecoverPassword = async () => {
   try {
     let correctAnswers = 0;
-    if (
-      paramRecoverPassword.value.firtQuestionAnswer === dataUser.value?.firtQuestionAnswer
-    ) {
+    if (paramRecoverPassword.value.firtQuestionAnswer === dataUser.value?.firtQuestionAnswer) {
       correctAnswers++;
     }
-    if (
-      paramRecoverPassword.value.secoundQuestionAnswer ===
-      dataUser.value?.secoundQuestionAnswer
-    ) {
+    if (paramRecoverPassword.value.secoundQuestionAnswer === dataUser.value?.secoundQuestionAnswer) {
       correctAnswers++;
     }
-    if (
-      paramRecoverPassword.value.trirdQuestionAnswer ===
-      dataUser.value?.trirdQuestionAnswer
-    ) {
+    if (paramRecoverPassword.value.trirdQuestionAnswer === dataUser.value?.trirdQuestionAnswer) {
       correctAnswers++;
     }
     if (correctAnswers >= 2) {
-      messageWarning.value = "Um e-mail para recuperação de senha enviado ao seu e-mail.";
-      showToast.value = true;
+      stepRecoverPassword.value = 2;
     } else {
-      messageWarning.value =
-        "Você precisa acertar pelo menos 2 respostas para prosseguirmos";
+      message.value = "Você precisa acertar pelo menos 2 respostas para prosseguirmos";
       showToast.value = true;
     }
   } catch (error: any) {
     if (error.response?.status !== 401) {
-      messageWarning.value =
-        "Ocorreu um erro ao enviar e-mail de recuperação de senha, por favor contate o administrador do sistema.";
+      message.value =  "Ocorreu um erro ao enviar e-mail de recuperação de senha, por favor entre em contato conosco.";
       showToast.value = true;
     }
   } finally {
@@ -218,28 +207,47 @@ const sendMailRecoverPassword = async () => {
   }
 };
 
-const isStepOneValid = computed(() => {
+const handleRedirectToLogin = () => {
+  isLogin.value = !isLogin.value;
+};
+
+const closeModalRecoverPassword = () => {
+  modalRecoverPassword.value = false;
+  clearObject(paramRecoverPassword.value);
+  stepRecoverPassword.value = 1;
+  dataUser.value = undefined;
+};
+
+const isStepOneRegisterValid = computed(() => {
   return (
     paramUser.value.email &&
     paramUser.value.username &&
     paramUser.value.name &&
     paramUser.value.lastname &&
-    paramUser.value.gender &&
+    paramUser.value.gender
+  );
+});
+
+const isStepTwoRegisterValid = computed(() => {
+  return (
     paramUser.value.password &&
     confirmPassword.value &&
     paramUser.value.password === confirmPassword.value
   );
 });
 
-const isStepTwoValid = computed(() => {
+const isStepThreeRegisterValid = computed(() => {
   return (
+    paramUser.value.firtQuestion &&
     paramUser.value.firtQuestionAnswer &&
+    paramUser.value.secoundQuestion &&
     paramUser.value.secoundQuestionAnswer &&
+    paramUser.value.trirdQuestionAnswer &&
     paramUser.value.trirdQuestionAnswer
   );
 });
 
-const isStepRecoverPassword = computed(() => {
+const isStepOneRecoverPassword = computed(() => {
   return (
     paramRecoverPassword.value.email &&
     paramRecoverPassword.value.firtQuestionAnswer &&
@@ -248,9 +256,15 @@ const isStepRecoverPassword = computed(() => {
   );
 });
 
-watch(
-  () => paramUser.value.email,
-  (newEmail) => {
+const isStepThreeRecoverPassword = computed(() => {
+  return (
+    paramUser.value.password &&
+    confirmPassword.value &&
+    paramUser.value.password === confirmRecoverPassoword.value
+  );
+});
+
+watch(() => paramUser.value.email, (newEmail) => {
     const atIndex = newEmail.indexOf("@");
     if (atIndex !== -1) {
       paramUser.value.username = newEmail.substring(0, atIndex);
@@ -260,13 +274,9 @@ watch(
   }
 );
 
-const handleRedirectToLogin = () => {
-  isLogin.value = !isLogin.value;
-};
-
 onMounted(() => {
   if (route.query.sessionExpired === "401") {
-    messageWarning.value = "Sua sessão expirou, por favor faça login novamente.";
+    message.value = "Sua sessão expirou, por favor faça login novamente.";
     showToast.value = true;
   }
 });
@@ -289,7 +299,7 @@ onMounted(() => {
           {{
             isLogin
               ? "Faça login para continuar"
-              : "Comece sua jornada conosco, primeiro informe seu e-mail para sabermos se você é nosso cliente"
+              : "Comece sua jornada conosco, primeiro informe seu e-mail para sabermos se você é nosso cliente e então siga os próximos passos"
           }}
         </p>
 
@@ -333,7 +343,7 @@ onMounted(() => {
           <div class="card-footer">
             <a
               href="#"
-              @click.prevent="showInfoForgotPasswordModal = true"
+              @click.prevent="modalRecoverPassword = true"
               class="card-link"
             >
               Esqueceu sua senha ?
@@ -367,51 +377,76 @@ onMounted(() => {
             </ion-input>
           </ion-item>
 
-          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
-            <ion-input
-              :disabled="true"
-              type="text"
-              placeholder="* Usuário"
-              :maxlength="100"
-              v-model="paramUser.username"
-              class="input-field"
-            />
-          </ion-item>
+          <ion-spinner v-if="loadingRpaUser" color="secondary"></ion-spinner>
 
-          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
-            <ion-input
-              type="text"
-              placeholder="* Nome"
-              :maxlength="100"
-              v-model="paramUser.name"
-              class="input-field"
-            />
-          </ion-item>
+          <div v-if="dataRpaUser">
+            <ion-item class="custom-input" lines="none">
+              <ion-input
+                :disabled="true"
+                type="text"
+                placeholder="* Usuário"
+                :maxlength="100"
+                v-model="paramUser.username"
+                class="input-field"
+              />
+            </ion-item>
 
-          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
-            <ion-input
-              type="text"
-              placeholder="* Sobrenome"
-              :maxlength="100"
-              v-model="paramUser.lastname"
-              class="input-field"
-            />
-          </ion-item>
+            <ion-item class="custom-input" lines="none">
+              <ion-input
+                type="text"
+                placeholder="* Nome"
+                :maxlength="100"
+                v-model="paramUser.name"
+                class="input-field"
+              />
+            </ion-item>
 
-          <ion-item class="custom-input custom-select" lines="none" v-if="dataRpaUser">
-            <ion-select
-              interface="action-sheet"
-              placeholder="* Gênero"
-              :maxlength="100"
-              v-model="paramUser.gender"
-              class="select-field"
+            <ion-item class="custom-input" lines="none">
+              <ion-input
+                type="text"
+                placeholder="* Sobrenome"
+                :maxlength="100"
+                v-model="paramUser.lastname"
+                class="input-field"
+              />
+            </ion-item>
+
+            <ion-item class="custom-input custom-select" lines="none">
+              <ion-select
+                interface="action-sheet"
+                placeholder="* Gênero"
+                :maxlength="100"
+                v-model="paramUser.gender"
+                class="select-field"
+              >
+                <ion-select-option value="masculino">Masculino</ion-select-option>
+                <ion-select-option value="feminino">Feminino</ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-button
+              expand="block"
+              shape="round"
+              class="card-button"
+              @click="stepRegister = 2"
+              :disabled="!isStepOneRegisterValid"
             >
-              <ion-select-option value="masculino">Masculino</ion-select-option>
-              <ion-select-option value="feminino">Feminino</ion-select-option>
-            </ion-select>
-          </ion-item>
+              Próximo
+            </ion-button>
+          </div>
+            <div class="card-footer">
+              <p>
+                Já tem uma conta ?
+                <a href="#" @click.prevent="handleRedirectToLogin" class="card-link">
+                  Entrar
+                </a>
+              </p>
+            </div>
+        </div>
 
-          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
+        <!-- ##################### REGISTER STEP 2 ##################### -->
+        <div class="card-form" v-if="!isLogin && stepRegister === 2">
+          <ion-item class="custom-input" lines="none">
             <ion-input
               type="password"
               placeholder="* Senha"
@@ -423,7 +458,7 @@ onMounted(() => {
             </ion-input>
           </ion-item>
 
-          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
+          <ion-item class="custom-input" lines="none">
             <ion-input
               type="password"
               placeholder="* Confime a senha"
@@ -439,68 +474,10 @@ onMounted(() => {
             expand="block"
             shape="round"
             class="card-button"
-            @click="stepRegister = 2"
-            :disabled="!isStepOneValid"
+            @click="stepRegister = 3"
+            :disabled="!isStepTwoRegisterValid"
           >
             Próximo
-          </ion-button>
-
-          <div class="card-footer">
-            <p>
-              Já tem uma conta ?
-              <a href="#" @click.prevent="handleRedirectToLogin" class="card-link">
-                Entrar
-              </a>
-            </p>
-          </div>
-        </div>
-
-        <!-- ##################### REGISTER STEP 2 ##################### -->
-        <div class="card-form" v-if="!isLogin && stepRegister === 2">
-          <p class="question-text">1) Qual o nome do seu animal de estimação ?</p>
-          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
-            <ion-input
-              type="text"
-              placeholder="* Resposta"
-              :maxlength="100"
-              v-model="paramUser.firtQuestionAnswer"
-              class="input-field"
-            />
-          </ion-item>
-
-          <p class="question-text">2) Qual o nome da sua cidade natal ?</p>
-          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
-            <ion-input
-              type="text"
-              placeholder="* Resposta"
-              :maxlength="100"
-              v-model="paramUser.secoundQuestionAnswer"
-              class="input-field"
-            />
-          </ion-item>
-
-          <p class="question-text">3) Qual o seu hobbie ?</p>
-          <ion-item class="custom-input" lines="none" v-if="dataRpaUser">
-            <ion-input
-              type="text"
-              placeholder="* Resposta"
-              :maxlength="100"
-              v-model="paramUser.trirdQuestionAnswer"
-              class="input-field"
-            />
-          </ion-item>
-
-          <ion-button
-            expand="block"
-            shape="round"
-            class="card-button"
-            @click="authRegister()"
-            :disabled="!isStepTwoValid"
-          >
-            <template v-if="loadingRegister">
-              <ion-spinner name="crescent"></ion-spinner>
-            </template>
-            <template v-else> Registrar </template>
           </ion-button>
 
           <ion-button
@@ -515,13 +492,113 @@ onMounted(() => {
           </ion-button>
         </div>
 
-        <!-- ##################### MODAL RECOVER PASSWORD ##################### -->
-        <ion-modal :is-open="showInfoForgotPasswordModal">
+
+        <!-- ##################### REGISTER STEP 3 ##################### -->
+        <div class="card-form" v-if="!isLogin && stepRegister === 3">
+            <p class="question-text">Escolha a primeira pergunta de segurança:</p>
+            <ion-item class="custom-input custom-select" lines="none">
+              <ion-select
+                interface="action-sheet"
+                placeholder="* Escolha"
+                :maxlength="100"
+                v-model="paramUser.firtQuestion"
+                class="select-field"
+              >
+                <ion-select-option value="Qual foi o destino da sua primeira viagem ?">Qual foi o destino da sua primeira viagem ?</ion-select-option>
+                <ion-select-option value="Qual foi a sua última viagem de férias ?">Qual foi a sua última viagem de férias ?</ion-select-option>
+              </ion-select>
+            </ion-item>
+          <ion-item class="custom-input" lines="none">
+            <ion-input
+              type="text"
+              placeholder="* Resposta"
+              :maxlength="100"
+              v-model="paramUser.firtQuestionAnswer"
+              class="input-field"
+            >
+            </ion-input>
+          </ion-item>
+
+            <p class="question-text">Escolha a segunda pergunta de segurança:</p>
+            <ion-item class="custom-input custom-select" lines="none">
+              <ion-select
+                interface="action-sheet"
+                placeholder="* Escolha"
+                :maxlength="100"
+                v-model="paramUser.secoundQuestion"
+                class="select-field"
+              >
+                <ion-select-option value="Qual foi a sua viagem favorita ?">Qual foi a sua viagem favorita ?</ion-select-option>
+                <ion-select-option value="Qual destino de viagem dos sonhos ?">Qual destino de viagem dos sonhos ?</ion-select-option>
+              </ion-select>
+            </ion-item>
+          <ion-item class="custom-input" lines="none">
+            <ion-input
+              type="text"
+              placeholder="* Resposta"
+              :maxlength="100"
+              v-model="paramUser.secoundQuestionAnswer"
+              class="input-field"
+            >
+            </ion-input>
+          </ion-item>
+
+            <p class="question-text">Escolha a terceira pergunta de segurança:</p>
+            <ion-item class="custom-input custom-select" lines="none">
+              <ion-select
+                interface="action-sheet"
+                placeholder="* Escolha"
+                :maxlength="100"
+                v-model="paramUser.trirdQuestion"
+                class="select-field"
+              >
+                <ion-select-option value="Qual objeto você não deixaria de levar em uma viagem ?">Qual objeto você não deixaria de levar em uma viagem ?</ion-select-option>
+                <ion-select-option value="O que você mais gostaria de fazer em uma viagem ?">O que você mais gostaria de fazer em uma viagem ?</ion-select-option>
+              </ion-select>
+            </ion-item>
+          <ion-item class="custom-input" lines="none">
+            <ion-input
+              type="text"
+              placeholder="* Resposta"
+              :maxlength="100"
+              v-model="paramUser.trirdQuestionAnswer"
+              class="input-field"
+            >
+            </ion-input>
+          </ion-item>
+
+          <ion-button
+            expand="block"
+            shape="round"
+            class="card-button"
+            @click="authRegister()"
+            :disabled="!isStepThreeRegisterValid"
+          >
+            <template v-if="loadingRegister">
+              <ion-spinner name="crescent"></ion-spinner>
+            </template>
+            <template v-else> Registrar </template>
+          </ion-button>
+
+          <ion-button
+            expand="block"
+            shape="round"
+            fill="outline"
+            color="medium"
+            class="card-button"
+            @click="stepRegister = 2"
+          >
+            Voltar
+          </ion-button>
+        </div>
+
+        <!-- ##################### MODAL RECOVER PASSWORD STEP 1 ##################### -->
+        <ion-modal :is-open="modalRecoverPassword">
           <ion-header>
             <ion-toolbar>
               <ion-title>Recuperar senha</ion-title>
               <ion-buttons slot="end">
-                <ion-button @click="showInfoForgotPasswordModal = false"
+                <ion-button @click="closeModalRecoverPassword();"
                   >Fechar</ion-button
                 >
               </ion-buttons>
@@ -531,94 +608,141 @@ onMounted(() => {
             <h5 class="modal-title">
               Por questões de segurança, por favor preencha as informações abaixo:
             </h5>
-
-            <p class="question-text">Qual o seu e-mail cadastrado ?</p>
-            <ion-item class="custom-input" lines="none">
-              <ion-input
-                type="text"
-                placeholder="* E-mail"
-                :maxlength="100"
-                v-model="paramRecoverPassword.email"
-                class="input-field"
-              >
-                <ion-icon
-                  slot="end"
-                  class="input-email-icon"
-                  :icon="searchSharp"
-                  aria-hidden="true"
-                  @click="loadUser()"
-                ></ion-icon>
-              </ion-input>
-            </ion-item>
-
-            <div v-if="dataUser">
-              <p class="question-text">1) Qual o nome do seu animal de estimação ?</p>
-              <ion-item class="custom-input custom-select" lines="none">
-                <ion-select
-                  v-model="paramRecoverPassword.firtQuestionAnswer"
-                  interface="action-sheet"
-                  placeholder="* Resposta"
+            <div v-if="stepRecoverPassword === 1">
+              <p class="question-text">Qual o seu e-mail cadastrado ?</p>
+              <ion-item class="custom-input" lines="none">
+                <ion-input
+                  type="text"
+                  placeholder="* E-mail"
                   :maxlength="100"
-                  class="select-field"
+                  v-model="paramRecoverPassword.email"
+                  class="input-field"
                 >
-                  <ion-select-option value="Max">Max</ion-select-option>
-                  <ion-select-option value="Luna">Luna</ion-select-option>
-                  <ion-select-option :value="checkFirtQuestionAnswer">{{
-                    checkFirtQuestionAnswer
-                  }}</ion-select-option>
-                </ion-select>
+                  <ion-icon
+                    slot="end"
+                    class="input-email-icon"
+                    :icon="searchSharp"
+                    aria-hidden="true"
+                    @click="loadUser()"
+                  ></ion-icon>
+                </ion-input>
               </ion-item>
 
-              <p class="question-text">2) Qual o nome da sua cidade natal ?</p>
-              <ion-item class="custom-input custom-select" lines="none">
-                <ion-select
-                  v-model="paramRecoverPassword.secoundQuestionAnswer"
-                  interface="action-sheet"
-                  placeholder="* Resposta"
-                  :maxlength="100"
-                  class="select-field"
-                >
-                  <ion-select-option value="masculino">Lisboa</ion-select-option>
-                  <ion-select-option value="feminino"
-                    >Rio Grande do Sul</ion-select-option
+              <ion-spinner v-if="loadingUser" color="secondary"></ion-spinner>
+
+              <div v-if="dataUser">
+                <p class="question-text">{{ checkFirtQuestion }}</p>
+                <ion-item class="custom-input custom-select" lines="none">
+                  <ion-select
+                    v-model="paramRecoverPassword.firtQuestionAnswer"
+                    interface="action-sheet"
+                    placeholder="* Resposta"
+                    :maxlength="100"
+                    class="select-field"
                   >
-                  <ion-select-option :value="checkSecoundQuestionAnswer">{{
-                    checkSecoundQuestionAnswer
-                  }}</ion-select-option>
-                </ion-select>
-              </ion-item>
+                    <ion-select-option value="Austrália">Austrália</ion-select-option>
+                    <ion-select-option value="Finlândia">Finlândia</ion-select-option>
+                    <ion-select-option :value="checkFirtQuestionAnswer">{{
+                      checkFirtQuestionAnswer
+                    }}</ion-select-option>
+                  </ion-select>
+                </ion-item>
 
-              <p class="question-text">3) Qual o seu hobbie ?</p>
-              <ion-item class="custom-input custom-select" lines="none">
-                <ion-select
-                  v-model="paramRecoverPassword.trirdQuestionAnswer"
-                  interface="action-sheet"
-                  placeholder="* Resposta"
-                  :maxlength="100"
-                  class="select-field"
-                >
-                  <ion-select-option value="masculino">Ler livros</ion-select-option>
-                  <ion-select-option value="feminino"
-                    >Passear no parque</ion-select-option
+                <p class="question-text">{{ checkSecoundQuestion }}</p>
+                <ion-item class="custom-input custom-select" lines="none">
+                  <ion-select
+                    v-model="paramRecoverPassword.secoundQuestionAnswer"
+                    interface="action-sheet"
+                    placeholder="* Resposta"
+                    :maxlength="100"
+                    class="select-field"
                   >
-                  <ion-select-option :value="checkTrirdQuestionAnswer">{{
-                    checkTrirdQuestionAnswer
-                  }}</ion-select-option>
-                </ion-select>
-              </ion-item>
+                    <ion-select-option value="Disney">Disney</ion-select-option>
+                    <ion-select-option value="Cataratas do Iguaçu">Cataratas do Iguaçu</ion-select-option>
+                    <ion-select-option :value="checkSecoundQuestionAnswer">{{
+                      checkSecoundQuestionAnswer
+                    }}</ion-select-option>
+                  </ion-select>
+                </ion-item>
 
-              <ion-button
-                expand="block"
-                shape="round"
-                class="card-button"
-                @click="sendMailRecoverPassword"
-                :disabled="!isStepRecoverPassword"
-              >
-                <template v-if="loadingRegister">
-                  <ion-spinner name="crescent"></ion-spinner>
-                </template>
-                <template v-else> Verificar </template>
-              </ion-button>
+                <p class="question-text">{{ checkTrirdQuestion }}</p>
+                <ion-item class="custom-input custom-select" lines="none">
+                  <ion-select
+                    v-model="paramRecoverPassword.trirdQuestionAnswer"
+                    interface="action-sheet"
+                    placeholder="* Resposta"
+                    :maxlength="100"
+                    class="select-field"
+                  >
+                    <ion-select-option value="Meias Esportivas">Meias Esportivas</ion-select-option>
+                    <ion-select-option value="Óculos de Sol">Óculos de Sol</ion-select-option>
+                    <ion-select-option :value="checkTrirdQuestionAnswer">{{
+                      checkTrirdQuestionAnswer
+                    }}</ion-select-option>
+                  </ion-select>
+                </ion-item>
+
+                <ion-button
+                  expand="block"
+                  shape="round"
+                  class="card-button"
+                  @click="sendMailToRecoverPassword"
+                  :disabled="!isStepOneRecoverPassword"
+                >
+                  Verificar
+                </ion-button>
+              </div>
+            </div>
+            <!-- ##################### MODAL RECOVER PASSWORD STEP 2 ##################### -->
+            <div v-if="stepRecoverPassword === 2">
+              <p class="question-text">Enviamos um um e-mail para {{ paramRecoverPassword.email }} para validação de código.</p>
+              <ion-input-otp> Não recebeu o código ? <a href="#">Reenviar código</a> </ion-input-otp>
+            
+                <ion-button
+                  expand="block"
+                  shape="round"
+                  class="card-button"
+                  @click="stepRecoverPassword = 3"
+                >
+                  Verificar
+                </ion-button>
+            </div>
+
+            <!-- ##################### MODAL RECOVER PASSWORD STEP 3 ##################### -->
+            <div v-if="stepRecoverPassword === 3">
+
+          <ion-item class="custom-input" lines="none">
+            <ion-input
+              type="password"
+              placeholder="* Senha"
+              :maxlength="100"
+              v-model="paramUser.password"
+              class="input-field"
+            >
+              <ion-input-password-toggle slot="end" />
+            </ion-input>
+          </ion-item>
+
+          <ion-item class="custom-input" lines="none">
+            <ion-input
+              type="password"
+              placeholder="* Confime a senha"
+              :maxlength="100"
+              v-model="confirmPassword"
+              class="input-field"
+            >
+              <ion-input-password-toggle slot="end" />
+            </ion-input>
+          </ion-item>
+
+          <ion-button
+            expand="block"
+            shape="round"
+            class="card-button"
+            :disabled="!isStepThreeRecoverPassword"
+          >
+            Redefinir Senha
+          </ion-button>
             </div>
           </ion-content>
         </ion-modal>
@@ -626,7 +750,7 @@ onMounted(() => {
 
       <ion-toast
         :is-open="showToast"
-        :message="messageWarning"
+        :message="message"
         :duration="4000"
         color="primary"
         position="bottom"

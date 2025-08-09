@@ -16,7 +16,17 @@ const now = ref(new Date());
 
 onMounted(() => {
   now.value = new Date();
+
+  // (window as any)._digisac = {
+  //   id: "84d56f00-ff50-4713-b3a5-deaa60189554"
+  // };
+
+  // const script = document.createElement("script");
+  // script.src = "https://webchat.digisac.app/embedded.js";
+  // script.async = true;
+  // document.body.appendChild(script);
 });
+
 
 const isBusinessHours = computed(() => {
   const day = now.value.getDay();
