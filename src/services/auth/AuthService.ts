@@ -46,4 +46,14 @@ export class AuthService {
       throw error;
     }
   }
+
+  public async updateRecoverPasswordService(email: string, password: string): Promise<User> {
+    try {
+      const res = await http.put("/auth/update-recover-password", { email, password });
+      return res.data;
+    } catch (error: any) {
+      console.log(error);
+      throw error;
+    }
+  }
 }

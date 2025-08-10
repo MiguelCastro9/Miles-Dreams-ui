@@ -35,6 +35,7 @@ const dataUser = ref<User | undefined>(undefined);
 const loadingLogin = ref(false);
 const loadingRpaUser = ref(false);
 const loadingUser = ref(false);
+const loadingRecoverPassword = ref(false);
 const loadingRegister = ref(false);
 const isLogin = ref(true);
 const message = ref();
@@ -179,6 +180,26 @@ const authRegister = async () => {
   }
 };
 
+const updateRecoverPassowrd = async () => {
+  try {
+    loadingRecoverPassword.value = true;
+    await authService.updateRecoverPasswordService(paramRecoverPassword.value.email, paramRecoverPassword.value.newPassword);
+    loadingRecoverPassword.value = false;
+    clearObject(paramRecoverPassword.value);
+    confirmPassword.value = "";
+    closeModalRecoverPassword();
+    message.value = "Senha redefinida com sucesso!";
+    showToast.value = true;
+  } catch (error: any) {
+    if (error.response?.status !== 401) {
+      message.value = "Ocorreu um erro ao redefinir a senha, por favor entre em contato conosco.";
+      showToast.value = true;
+    }
+  } finally {
+    loadingRegister.value = false;
+  }
+};
+
 const sendMailToRecoverPassword = async () => {
   try {
     let correctAnswers = 0;
@@ -258,9 +279,9 @@ const isStepOneRecoverPassword = computed(() => {
 
 const isStepThreeRecoverPassword = computed(() => {
   return (
-    paramUser.value.password &&
-    confirmPassword.value &&
-    paramUser.value.password === confirmRecoverPassoword.value
+    paramRecoverPassword.value.newPassword &&
+    confirmRecoverPassoword.value &&
+    paramRecoverPassword.value.newPassword === confirmRecoverPassoword.value
   );
 });
 
@@ -710,39 +731,42 @@ onMounted(() => {
 
             <!-- ##################### MODAL RECOVER PASSWORD STEP 3 ##################### -->
             <div v-if="stepRecoverPassword === 3">
+              <ion-item class="custom-input" lines="none">
+                <ion-input
+                  type="password"
+                  placeholder="* Senha"
+                  :maxlength="100"
+                  v-model="paramRecoverPassword.newPassword"
+                  class="input-field"
+                >
+                  <ion-input-password-toggle slot="end" />
+                </ion-input>
+              </ion-item>
 
-          <ion-item class="custom-input" lines="none">
-            <ion-input
-              type="password"
-              placeholder="* Senha"
-              :maxlength="100"
-              v-model="paramUser.password"
-              class="input-field"
-            >
-              <ion-input-password-toggle slot="end" />
-            </ion-input>
-          </ion-item>
+              <ion-item class="custom-input" lines="none">
+                <ion-input
+                  type="password"
+                  placeholder="* Confime a senha"
+                  :maxlength="100"
+                  v-model="confirmRecoverPassoword"
+                  class="input-field"
+                >
+                  <ion-input-password-toggle slot="end" />
+                </ion-input>
+              </ion-item>
 
-          <ion-item class="custom-input" lines="none">
-            <ion-input
-              type="password"
-              placeholder="* Confime a senha"
-              :maxlength="100"
-              v-model="confirmPassword"
-              class="input-field"
-            >
-              <ion-input-password-toggle slot="end" />
-            </ion-input>
-          </ion-item>
-
-          <ion-button
-            expand="block"
-            shape="round"
-            class="card-button"
-            :disabled="!isStepThreeRecoverPassword"
-          >
-            Redefinir Senha
-          </ion-button>
+              <ion-button
+                expand="block"
+                shape="round"
+                class="card-button"
+                @click="updateRecoverPassowrd()"
+                :disabled="!isStepThreeRecoverPassword"
+              >
+                <template v-if="loadingRecoverPassword">
+                  <ion-spinner name="crescent"></ion-spinner>
+                </template>
+                <template v-else> Redefinir Senha </template>
+              </ion-button>
             </div>
           </ion-content>
         </ion-modal>
