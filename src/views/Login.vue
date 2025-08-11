@@ -249,13 +249,24 @@ const isStepOneRegisterValid = computed(() => {
   );
 });
 
-const isStepTwoRegisterValid = computed(() => {
-  return (
-    paramUser.value.password &&
-    confirmPassword.value &&
-    paramUser.value.password === confirmPassword.value
-  );
+const passwordRegisterRules = computed(() => {
+  const pwd = paramUser.value.password || "";
+  const email = paramUser.value.email || "";
+
+  return [
+    { text: "Mínimo de 8 caracteres", valid: pwd.length >= 8 },
+    { text: "Pelo menos 1 letra maiúscula", valid: /[A-Z]/.test(pwd) },
+    { text: "Pelo menos 1 letra minúscula", valid: /[a-z]/.test(pwd) },
+    { text: "Pelo menos 1 número", valid: /\d/.test(pwd) },
+    { text: "Não pode ser igual ao e-mail", valid: pwd !== email },
+    { text: "Senha e confirmação iguais", valid: pwd === confirmPassword.value && pwd.length > 0 }
+  ];
 });
+
+const isStepTwoRegisterValid = computed(() =>
+  passwordRegisterRules.value.every(rule => rule.valid)
+);
+
 
 const isStepThreeRegisterValid = computed(() => {
   return (
@@ -277,13 +288,23 @@ const isStepOneRecoverPassword = computed(() => {
   );
 });
 
-const isStepThreeRecoverPassword = computed(() => {
-  return (
-    paramRecoverPassword.value.newPassword &&
-    confirmRecoverPassoword.value &&
-    paramRecoverPassword.value.newPassword === confirmRecoverPassoword.value
-  );
+const passwordRecoverPasswordRules = computed(() => {
+  const pwd = paramRecoverPassword.value.newPassword || "";
+  const email = paramRecoverPassword.value.email || "";
+
+  return [
+    { text: "Mínimo de 8 caracteres", valid: pwd.length >= 8 },
+    { text: "Pelo menos 1 letra maiúscula", valid: /[A-Z]/.test(pwd) },
+    { text: "Pelo menos 1 letra minúscula", valid: /[a-z]/.test(pwd) },
+    { text: "Pelo menos 1 número", valid: /\d/.test(pwd) },
+    { text: "Não pode ser igual ao e-mail", valid: pwd !== email },
+    { text: "Senha e confirmação iguais", valid: pwd === confirmRecoverPassoword.value && pwd.length > 0 }
+  ];
 });
+
+const isStepThreeRecoverPassowordValid = computed(() =>
+  passwordRecoverPasswordRules.value.every(rule => rule.valid)
+);
 
 watch(() => paramUser.value.email, (newEmail) => {
     const atIndex = newEmail.indexOf("@");
@@ -362,18 +383,18 @@ onMounted(() => {
           </ion-button>
 
           <div class="card-footer">
-            <a
+            <p
               href="#"
               @click.prevent="modalRecoverPassword = true"
               class="card-link"
             >
               Esqueceu sua senha ?
-            </a>
+            </p>
             <p>
               Ainda não tem uma conta ?
-              <a href="#" @click.prevent="handleRedirectToLogin" class="card-link">
+              <span @click="handleRedirectToLogin" class="card-link">
                 Regitre-se
-              </a>
+              </span>
             </p>
           </div>
         </div>
@@ -398,7 +419,9 @@ onMounted(() => {
             </ion-input>
           </ion-item>
 
-          <ion-spinner v-if="loadingRpaUser" color="secondary"></ion-spinner>
+          <div class="spinner-container">
+            <ion-spinner v-if="loadingRpaUser" color="secondary"></ion-spinner>
+          </div>
 
           <div v-if="dataRpaUser">
             <ion-item class="custom-input" lines="none">
@@ -482,7 +505,7 @@ onMounted(() => {
           <ion-item class="custom-input" lines="none">
             <ion-input
               type="password"
-              placeholder="* Confime a senha"
+              placeholder="* Confirme a senha"
               :maxlength="100"
               v-model="confirmPassword"
               class="input-field"
@@ -490,6 +513,12 @@ onMounted(() => {
               <ion-input-password-toggle slot="end" />
             </ion-input>
           </ion-item>
+
+          <ul class="rules-list">
+            <li v-for="rule in passwordRegisterRules" :key="rule.text" :class="{ valid: rule.valid, invalid: !rule.valid }">
+              {{ rule.text }}
+            </li>
+          </ul>
 
           <ion-button
             expand="block"
@@ -512,7 +541,6 @@ onMounted(() => {
             Voltar
           </ion-button>
         </div>
-
 
         <!-- ##################### REGISTER STEP 3 ##################### -->
         <div class="card-form" v-if="!isLogin && stepRegister === 3">
@@ -649,8 +677,9 @@ onMounted(() => {
                 </ion-input>
               </ion-item>
 
-              <ion-spinner v-if="loadingUser" color="secondary"></ion-spinner>
-
+              <div class="spinner-container">
+                <ion-spinner v-if="loadingUser" color="secondary"></ion-spinner>
+              </div>
               <div v-if="dataUser">
                 <p class="question-text">{{ checkFirtQuestion }}</p>
                 <ion-item class="custom-input custom-select" lines="none">
@@ -755,12 +784,18 @@ onMounted(() => {
                 </ion-input>
               </ion-item>
 
+              <ul class="rules-list">
+                <li v-for="rule in passwordRecoverPasswordRules" :key="rule.text" :class="{ valid: rule.valid, invalid: !rule.valid }">
+                  {{ rule.text }}
+                </li>
+              </ul>
+
               <ion-button
                 expand="block"
                 shape="round"
                 class="card-button"
                 @click="updateRecoverPassowrd()"
-                :disabled="!isStepThreeRecoverPassword"
+                :disabled="!isStepThreeRecoverPassowordValid"
               >
                 <template v-if="loadingRecoverPassword">
                   <ion-spinner name="crescent"></ion-spinner>
@@ -832,6 +867,31 @@ onMounted(() => {
   width: 100%;
 }
 
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rules-list {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 10px;
+}
+
+.rules-list li {
+  font-size: 0.9rem;
+  margin: 2px 0;
+}
+
+.rules-list li.valid {
+  color: #2A947D;
+}
+
+.rules-list li.invalid {
+  color:
+   #D03A52;
+}
 .question-text {
   font-size: 14px;
 }
@@ -878,7 +938,7 @@ onMounted(() => {
   --padding-top: 15px;
   --padding-bottom: 15px;
   font-weight: 600;
-  margin-top: 8px;
+  margin-top: 18px;
   letter-spacing: 0.5px;
   height: 45px;
 }
