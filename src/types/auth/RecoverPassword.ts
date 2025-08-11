@@ -3,5 +3,5 @@ export type RecoverPassword = {
     firtQuestionAnswer: string;
     secoundQuestionAnswer: string;
     trirdQuestionAnswer: string;
-    newPassword: string;
+    password: string;
 };

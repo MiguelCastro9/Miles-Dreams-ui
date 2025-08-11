@@ -45,7 +45,7 @@ const routes = [
         name: 'Chat',
         component: Chat,
         meta: { requiresAuth: true }
-      },
+      }
     ]
   },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFoundComponent }
