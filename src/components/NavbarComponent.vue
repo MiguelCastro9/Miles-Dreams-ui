@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import {
-  IonHeader,
-  IonToolbar
-} from "@ionic/vue";
+import { useRouter } from 'vue-router';
+import { IonHeader, IonToolbar } from "@ionic/vue";
+import { User } from "@vicons/tabler";
+const router = useRouter();
 </script>
 
 <template>
@@ -13,6 +13,10 @@ import {
         alt="Miles Dreams"
         class="brand-navbar"
       />
+      <div slot="end" class="navbar-actions">
+        <span class="points-text">2500 Pontos</span>
+        <User class="user-icon" @click="router.push('/tabs/settings')" />
+      </div>
     </ion-toolbar>
   </ion-header>
 </template>
@@ -23,17 +27,38 @@ import {
   --background: #fff;
 }
 
-@media (prefers-color-scheme: dark) {
-  .navbar {
-    --background: #181818;
-  }
-}
-
 .brand-navbar {
   height: 40px;
   width: 160px;
   object-fit: contain;
   margin: 8px 0;
-  display: block;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.points-text {
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 12px;
+  color: #f26b36;
+}
+
+.user-icon {
+  width: 26px;
+  height: 26px;
+  color: #f26b36;
+}
+
+@media (prefers-color-scheme: dark) {
+  .navbar {
+    --background: #181818;
+  }
 }
 </style>

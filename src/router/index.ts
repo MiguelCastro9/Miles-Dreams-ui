@@ -3,7 +3,6 @@ import Home from '@/views/Home.vue';
 import Settings from '@/views/Settings.vue';
 import Points from '@/views/Points.vue';
 import Offers from '@/views/Offers.vue';
-import Chat from '@/views/Chat.vue';
 import TabsComponent from '@/components/TabsComponent.vue'
 import NotFoundComponent from '@/components/NotFoundComponent.vue';
 import Login from '@/views/Login.vue';
@@ -38,12 +37,6 @@ const routes = [
         path: '/tabs/offers',
         name: 'Offers',
         component: Offers,
-        meta: { requiresAuth: true }
-      },
-      {
-        path: '/tabs/chat',
-        name: 'Chat',
-        component: Chat,
         meta: { requiresAuth: true }
       }
     ]

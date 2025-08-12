@@ -110,7 +110,7 @@ onMounted(() => {
             </ion-button>
 
             <div class="card-footer">
-              <p href="#" @click="showModalRecoverPassword = true" class="card-link">Esqueceu sua senha ?</p>
+              <p class="card-link"><span @click="showModalRecoverPassword = true">Esqueceu sua senha ?</span></p>
               <p>Ainda não tem uma conta ?<span class="card-link" @click="showRegister = true">Registre-se</span></p>
             </div>
           </div>
