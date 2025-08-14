@@ -1,29 +1,41 @@
 <script setup lang="ts">
 import { IonPage, IonContent, IonCard, IonCardTitle, IonList, IonItem, IonLabel } from '@ionic/vue';
 import NavbarComponent from '@/components/NavbarComponent.vue';
-import { Edit, Help, BuildingCommunity, Logout } from '@vicons/tabler';
+import { Edit, Help, BuildingCommunity, Logout, User } from '@vicons/tabler';
+import { ref, onMounted } from 'vue';
+
+const profileImage = ref<string | null>(null);
+
+onMounted(() => {
+  const storedImage = localStorage.getItem("profile-image");
+  if (storedImage) {
+    profileImage.value = storedImage;
+  }
+});
+
+const user = {
+  name: "João Silva",
+  email: "joao.silva@example.com",
+  status: "12 pontos"
+};
 
 const handleLogout = () => {
   localStorage.removeItem("token");
   window.location.href = "/login";
 };
-
-const user = {
-  name: "Iara Costa",
-  email: "iara.costa@email.com",
-  photo: "https://randomuser.me/api/portraits/women/12.jpg",
-  status: "2.500 pontos"
-};
 </script>
 
 <template>
   <ion-page>
-      <NavbarComponent />
+    <NavbarComponent />
     <ion-content :fullscreen="true" class="settings-content">
 
       <ion-card class="profile-card">
         <div class="profile-header">
-          <img :src="user.photo" alt="Foto do usuário" class="profile-picture" />
+          <div class="profile-picture-wrapper">
+            <img v-if="profileImage" :src="profileImage" alt="Foto do usuário" class="profile-picture"/>
+            <User v-else class="profile-picture-placeholder"/>
+          </div>
           <div class="profile-info">
             <ion-card-title class="profile-name">{{ user.name }}</ion-card-title>
             <ion-card-title class="profile-status">{{ user.status }}</ion-card-title>
@@ -72,14 +84,29 @@ const user = {
   padding: 20px 18px;
 }
 
-.profile-picture {
+.profile-picture-wrapper {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  object-fit: cover;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: 0 2px 8px 0 rgba(61,114,237,0.10);
   margin-right: 18px;
-  border: 3px solid #fff5ee;
+  background: #fff5ee;
+}
+
+.profile-picture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-picture-placeholder {
+  width: 50%;
+  height: 50%;
+  color: #3d72ed;
 }
 
 .profile-info {
@@ -95,7 +122,7 @@ const user = {
 }
 
 .profile-status {
-  color: #f26b36;
+  color: #3d72ed;
   font-size: 0.95rem;
   font-weight: 500;
   display: flex;

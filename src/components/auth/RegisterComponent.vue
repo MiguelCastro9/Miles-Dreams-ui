@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import router from "@/router/index.ts";
 import { AuthService } from "@/services/auth/AuthService";
 import { User } from "@/types/auth/User";
@@ -12,6 +13,7 @@ import {
   IonSelect,
   IonSelectOption,
   IonToast,
+  IonImg,
   IonSpinner
 } from "@ionic/vue";
 import { searchSharp, eyeOutline, eyeOffOutline } from "ionicons/icons";
@@ -21,6 +23,7 @@ const dataRpaUser = ref<User | undefined>(undefined);
 const loadingRegister = ref(false);
 const loadingRpaUser = ref(false);
 const stepRegister = ref(1);
+const previewProfileImage = ref<string | null>(null);
 const confirmPassword = ref("");
 const showPassword = ref(false);
 const message = ref();
@@ -96,6 +99,41 @@ const authRegister = async () => {
     loadingRegister.value = false;
   }
 };
+
+// MOBILE VERSION
+// async function profileImage() {
+//   try {
+//     const photo = await Camera.getPhoto({
+//       quality: 90,
+//       resultType: CameraResultType.Base64,
+//       source: CameraSource.Prompt
+//     });
+
+//     if (photo.base64String) {
+//       previewProfileImage.value = `data:image/jpeg;base64,${photo.base64String}`;
+//       localStorage.setItem("profile-image", previewProfileImage.value);
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+// WEB VERSION
+function profileImage(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    if (reader.result) {
+      const base64String = reader.result.toString();
+      previewProfileImage.value = base64String;
+      localStorage.setItem("profile-image", base64String);
+    }
+  };
+  reader.readAsDataURL(file);
+}
 
 const firstOptions = computed(() => allQuestions);
 const secondOptions = computed(() =>
@@ -192,6 +230,22 @@ watch(() => param.value.email, (newEmail) => {
     </div>
 
     <div v-if="dataRpaUser">
+    <!-- MOBILE VERSION -->
+      <!-- <div class="profile-image">
+        <ion-img v-if="previewProfileImage" :src="previewProfileImage"></ion-img>
+        <ion-button @click="profileImage" expand="block" shape="round">
+          Foto de perfil
+        </ion-button>
+      </div> -->
+
+      <!-- WEB VERSION -->
+      <div class="profile-image">
+        <div class="profile-image-content">
+          <ion-img v-if="previewProfileImage" :src="previewProfileImage"></ion-img>
+        </div>
+        <input type="file" accept="image/*" @change="profileImage" />
+      </div>
+
       <ion-item class="custom-input" lines="none">
         <ion-input
           :disabled="true"
@@ -439,6 +493,28 @@ watch(() => param.value.email, (newEmail) => {
 .card-form {
   margin-bottom: 24px;
   width: 100%;
+}
+
+.profile-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-image-content {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 2px solid var(--ion-color-primary);
+}
+
+.profile-image-content ion-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .spinner-container {

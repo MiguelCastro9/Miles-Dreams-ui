@@ -14,6 +14,7 @@ import {
   IonItem,
   IonInput,
   IonToast,
+  IonIcon,
   IonSpinner
 } from "@ionic/vue";
 import { eyeOutline, eyeOffOutline } from "ionicons/icons";

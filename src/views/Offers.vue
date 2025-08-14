@@ -144,9 +144,7 @@ const travel4 = {
 
 <template>
   <ion-page>
-    <ion-header>
-      <NavbarComponent />
-    </ion-header>
+    <NavbarComponent />
     <ion-content :fullscreen="true" class="offers-content">
       <ion-segment class="segment-menu">
         <ion-segment-button value="offers" content-id="offers">
