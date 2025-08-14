@@ -163,7 +163,7 @@ const travel4 = {
           <swiper :slides-per-view="1.2" :space-between="10" class="mySwiper">
             <swiper-slide>
               <ion-card>
-                <img class="card-image" src="/public/germany.png" />
+                <img class="card-image" src="/src/assets/germany.png" />
                 <ion-card-header>
                   <ion-card-title class="card-title">
                     <span class="title-with-icon">
@@ -180,7 +180,7 @@ const travel4 = {
 
             <swiper-slide>
               <ion-card>
-                <img class="card-image" src="/public/france.png" />
+                <img class="card-image" src="/src/assets/france.png" />
                 <ion-card-header>
                   <ion-card-title class="card-title">
                     <span class="title-with-icon">
@@ -197,7 +197,7 @@ const travel4 = {
 
             <swiper-slide>
               <ion-card>
-                <img class="card-image" src="/public/portugal.png" />
+                <img class="card-image" src="/src/assets/portugal.png" />
                 <ion-card-header>
                   <ion-card-title class="card-title">
                     <span class="title-with-icon">
@@ -214,7 +214,7 @@ const travel4 = {
 
             <swiper-slide>
               <ion-card>
-                <img class="card-image" src="/public/spain.png" />
+                <img class="card-image" src="/src/assets/spain.png" />
                 <ion-card-header>
                   <ion-card-title class="card-title">
                     <span class="title-with-icon">

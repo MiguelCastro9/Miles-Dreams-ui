@@ -25,6 +25,15 @@ const confirmPassword = ref("");
 const showPassword = ref(false);
 const message = ref();
 const showToast = ref(false);
+
+const allQuestions = [
+  "Qual foi o destino da sua primeira viagem ?",
+  "Qual foi a sua última viagem de férias ?",
+  "Qual foi a sua viagem favorita ?",
+  "Qual destino de viagem dos sonhos ?",
+  "Qual objeto você não deixaria de levar em uma viagem ?",
+  "O que você mais gostaria de fazer em uma viagem ?"
+];
  
 const param = ref<User>({
   name: "",
@@ -88,6 +97,16 @@ const authRegister = async () => {
   }
 };
 
+const firstOptions = computed(() => allQuestions);
+const secondOptions = computed(() =>
+  allQuestions.filter(q => q !== param.value.firtQuestion)
+);
+const thirdOptions = computed(() =>
+  allQuestions.filter(
+    q => q !== param.value.firtQuestion && q !== param.value.secoundQuestion
+  )
+);
+
 const isStepOneRegisterValid = computed(() => {
   return (
     param.value.email &&
@@ -145,7 +164,10 @@ watch(() => param.value.email, (newEmail) => {
 <template>
   <!-- ##################### STEP 1 ##################### -->
   <h1 class="card-title">Crie sua conta</h1>
-  <p class="card-subtitle">Comece sua jornada conosco, primeiro informe seu e-mail para sabermos se você é nosso cliente e então siga os próximos passos</p>
+  <p class="card-subtitle">
+    Comece sua jornada conosco, primeiro informe seu e-mail para 
+    sabermos se você é nosso cliente e então siga os próximos passos
+  </p>
   <div class="card-form" v-if="stepRegister === 1">
     <ion-item class="custom-input" lines="none">
       <ion-input
@@ -287,12 +309,15 @@ watch(() => param.value.email, (newEmail) => {
       <ion-select
         interface="action-sheet"
         placeholder="* Escolha"
-        :maxlength="100"
         v-model="param.firtQuestion"
-        class="select-field"
       >
-        <ion-select-option value="Qual foi o destino da sua primeira viagem ?">Qual foi o destino da sua primeira viagem ?</ion-select-option>
-        <ion-select-option value="Qual foi a sua última viagem de férias ?">Qual foi a sua última viagem de férias ?</ion-select-option>
+        <ion-select-option
+          v-for="q in firstOptions"
+          :key="q"
+          :value="q"
+        >
+          {{ q }}
+        </ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item class="custom-input" lines="none">
@@ -311,12 +336,15 @@ watch(() => param.value.email, (newEmail) => {
       <ion-select
         interface="action-sheet"
         placeholder="* Escolha"
-        :maxlength="100"
         v-model="param.secoundQuestion"
-        class="select-field"
       >
-        <ion-select-option value="Qual foi a sua viagem favorita ?">Qual foi a sua viagem favorita ?</ion-select-option>
-        <ion-select-option value="Qual destino de viagem dos sonhos ?">Qual destino de viagem dos sonhos ?</ion-select-option>
+        <ion-select-option
+          v-for="q in secondOptions"
+          :key="q"
+          :value="q"
+        >
+          {{ q }}
+        </ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item class="custom-input" lines="none">
@@ -335,12 +363,15 @@ watch(() => param.value.email, (newEmail) => {
       <ion-select
         interface="action-sheet"
         placeholder="* Escolha"
-        :maxlength="100"
         v-model="param.trirdQuestion"
-        class="select-field"
       >
-        <ion-select-option value="Qual objeto você não deixaria de levar em uma viagem ?">Qual objeto você não deixaria de levar em uma viagem ?</ion-select-option>
-        <ion-select-option value="O que você mais gostaria de fazer em uma viagem ?">O que você mais gostaria de fazer em uma viagem ?</ion-select-option>
+        <ion-select-option
+          v-for="q in thirdOptions"
+          :key="q"
+          :value="q"
+        >
+          {{ q }}
+        </ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item class="custom-input" lines="none">
