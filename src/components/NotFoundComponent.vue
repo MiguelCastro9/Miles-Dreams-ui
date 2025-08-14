@@ -7,7 +7,7 @@ const router = useRouter();
 <template>
   <div class="container">
     <h2 class="title-container">Página não encontrada</h2>
-    <ion-button shape="round" fill="outline" size="default" @click="router.push('/tabs/home')">
+    <ion-button shape="round" fill="outline" size="default" @click="router.push('/tabs/offers')">
       Voltar
     </ion-button>
   </div>

@@ -1,30 +1,22 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
-import Home from '@/views/Home.vue';
-import Settings from '@/views/Settings.vue';
-import Points from '@/views/Points.vue';
 import Offers from '@/views/Offers.vue';
+import Points from '@/views/Points.vue';
+import Settings from '@/views/Settings.vue';
 import TabsComponent from '@/components/TabsComponent.vue'
 import NotFoundComponent from '@/components/NotFoundComponent.vue';
 import Login from '@/views/Login.vue';
 
 const routes = [
-  { path: '/', redirect: '/tabs/home' },
+  { path: '/', redirect: '/tabs/offers' },
   { path: '/login', name: 'Login', component: Login },
   {
     path: '/tabs',
     component: TabsComponent,
     children: [
       {
-        path: '/tabs/home',
-        name: 'Home',
-        component: Home,
-        meta: { requiresAuth: true }
-      },
-
-      {
-        path: '/tabs/settings',
-        name: 'Settings',
-        component: Settings,
+        path: '/tabs/offers',
+        name: 'Offers',
+        component: Offers,
         meta: { requiresAuth: true }
       },
       {
@@ -34,9 +26,9 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
-        path: '/tabs/offers',
-        name: 'Offers',
-        component: Offers,
+        path: '/tabs/settings',
+        name: 'Settings',
+        component: Settings,
         meta: { requiresAuth: true }
       }
     ]

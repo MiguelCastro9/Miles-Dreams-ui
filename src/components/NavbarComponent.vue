@@ -47,13 +47,13 @@ const router = useRouter();
   font-weight: 600;
   font-size: 14px;
   margin-top: 12px;
-  color: #f26b36;
+  color: #3d72ed;
 }
 
 .user-icon {
   width: 26px;
   height: 26px;
-  color: #f26b36;
+  color: #3d72ed;
 }
 
 @media (prefers-color-scheme: dark) {

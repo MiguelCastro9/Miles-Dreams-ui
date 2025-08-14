@@ -77,7 +77,7 @@ const authRegister = async () => {
     stepRegister.value = 1;
     message.value = "Cadastro realizado com sucesso!";
     showToast.value = true;
-    router.push({ path: "/tabs/home" });
+    router.push({ path: "/tabs/offers" });
   } catch (error: any) {
     if (error.response?.status !== 401) {
       message.value = "Ocorreu um erro no registro, por favor entre em contato conosco.";

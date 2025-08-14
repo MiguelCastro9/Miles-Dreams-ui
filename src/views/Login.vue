@@ -38,7 +38,7 @@ const authLogin = async () => {
     const data = await authService.loginService(paramLogin.value);
     localStorage.setItem("token", data.token);
     clearObject(paramLogin.value);
-    router.push({ path: "/tabs/home" });
+    router.push({ path: "/tabs/offers" });
   } catch (error: any) {
     if (error.response?.status === 401) {
       message.value = "Usuário ou senha inválidos.";
@@ -214,7 +214,7 @@ onMounted(() => {
   cursor: pointer;
   padding: 4px;
   font-size: 20px;
-  color: #4d8dff;
+  color: #3d72ed;
 }
 
 .card-button {
