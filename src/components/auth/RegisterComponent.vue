@@ -89,7 +89,7 @@ const authRegister = async () => {
     router.push({ path: "/tabs/offers" });
   } catch (error: any) {
     if (error.response?.status !== 401) {
-      message.value = "Ocorreu um erro no registro, por favor entre em contato conosco.";
+      message.value = error.response?.data.messageUser;
       showToast.value = true;
     }
   } finally {

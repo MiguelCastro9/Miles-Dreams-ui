@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits } from "vue";
+import { ref, computed, defineEmits } from "vue";
 import { AuthService } from "@/services/auth/AuthService";
 import { User } from "@/types/auth/User";
 import { RecoverPassword } from "@/types/auth/RecoverPassword";
@@ -68,13 +68,8 @@ const loadUser = async () => {
       showToast.value = true;
     }
   } catch (error: any) {
-    if (error.response?.status === 404) {
-      message.value = "Nenhum usuário encontrado.";
-      showToast.value = true;
-    }
     if (error.response?.status !== 401 && error.response?.status !== 404) {
-      message.value =
-        "Ocorreu um erro buscar usuário, por favor entre em contato conosco.";
+      message.value = "Ocorreu um erro buscar usuário, por favor entre em contato conosco.";
       showToast.value = true;
     }
   } finally {
