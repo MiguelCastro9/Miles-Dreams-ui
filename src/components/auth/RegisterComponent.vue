@@ -11,11 +11,10 @@ import {
   IonInput,
   IonSelect,
   IonSelectOption,
-  IonInputPasswordToggle,
   IonToast,
   IonSpinner
 } from "@ionic/vue";
-import { searchSharp } from "ionicons/icons";
+import { searchSharp, eyeOutline, eyeOffOutline } from "ionicons/icons";
 
 const authService = new AuthService();
 const dataRpaUser = ref<User | undefined>(undefined);
@@ -23,9 +22,10 @@ const loadingRegister = ref(false);
 const loadingRpaUser = ref(false);
 const stepRegister = ref(1);
 const confirmPassword = ref("");
+const showPassword = ref(false);
 const message = ref();
 const showToast = ref(false);
-
+ 
 const param = ref<User>({
   name: "",
   lastname: "",
@@ -127,6 +127,10 @@ const isStepThreeRegisterValid = computed(() => {
   );
 });
 
+function togglePassword() {
+  showPassword.value = !showPassword.value;
+}
+
 watch(() => param.value.email, (newEmail) => {
     const atIndex = newEmail.indexOf("@");
     if (atIndex !== -1) {
@@ -224,29 +228,29 @@ watch(() => param.value.email, (newEmail) => {
 
   <!-- ##################### STEP 2 ##################### -->
   <div class="card-form" v-if="stepRegister === 2">
-    <ion-item class="custom-input" lines="none">
-      <ion-input
-        type="password"
-        placeholder="* Senha"
-        :maxlength="100"
-        v-model="param.password"
-        class="input-field"
-      >
-        <ion-input-password-toggle slot="end" />
-      </ion-input>
-    </ion-item>
+  <ion-item class="custom-input" lines="none">
+    <ion-input
+      :type="showPassword ? 'text' : 'password'"
+      placeholder="* Senha"
+      :maxlength="100"
+      v-model="param.password"
+      class="input-field"
+    />
+  </ion-item>
 
-    <ion-item class="custom-input" lines="none">
-      <ion-input
-        type="password"
-        placeholder="* Confirme a senha"
-        :maxlength="100"
-        v-model="confirmPassword"
-        class="input-field"
-      >
-        <ion-input-password-toggle slot="end" />
-      </ion-input>
-    </ion-item>
+  <ion-item class="custom-input" lines="none">
+    <ion-input
+      :type="showPassword ? 'text' : 'password'"
+      placeholder="* Confirme a senha"
+      :maxlength="100"
+      v-model="confirmPassword"
+      class="input-field"
+    >
+      <div slot="end" class="icon-password" @click="togglePassword">
+        <ion-icon :icon="showPassword ? eyeOutline : eyeOffOutline" ></ion-icon>
+      </div>
+    </ion-input>
+  </ion-item>
 
     <ul class="password-rules-list">
       <li v-for="rule in passwordRules" :key="rule.text" :class="{ valid: rule.valid, invalid: !rule.valid }">
@@ -410,6 +414,15 @@ watch(() => param.value.email, (newEmail) => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.icon-password {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 20px;
+  color: #4d8dff;
 }
 
 .password-rules-list {

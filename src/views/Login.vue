@@ -13,16 +13,17 @@ import {
   IonButton,
   IonItem,
   IonInput,
-  IonInputPasswordToggle,
   IonToast,
   IonSpinner
 } from "@ionic/vue";
+import { eyeOutline, eyeOffOutline } from "ionicons/icons";
 
 const route = useRoute();
 const authService = new AuthService();
 const loadingLogin = ref(false);
 const showRegister = ref(false);
 const showModalRecoverPassword = ref(false);
+const showPassword = ref(false);
 const message = ref();
 const showToast = ref(false);
 
@@ -50,6 +51,10 @@ const authLogin = async () => {
     loadingLogin.value = false;
   }
 };
+
+function togglePassword() {
+  showPassword.value = !showPassword.value;
+}
 
 onMounted(() => {
   if (route.query.sessionExpired === "401") {
@@ -86,13 +91,15 @@ onMounted(() => {
 
             <ion-item class="custom-input" lines="none">
               <ion-input
-                type="password"
+                :type="showPassword ? 'text' : 'password'"
                 placeholder="* Senha"
                 :maxlength="100"
                 v-model="paramLogin.password"
                 class="input-field"
               >
-                <ion-input-password-toggle slot="end" />
+                <div slot="end" class="icon-password" @click="togglePassword">
+                  <ion-icon :icon="showPassword ? eyeOutline : eyeOffOutline" ></ion-icon>
+                </div>
               </ion-input>
             </ion-item>
 
@@ -199,6 +206,15 @@ onMounted(() => {
   --placeholder-opacity: 1;
   font-size: 16px;
   color: var(--ion-color-dark);
+}
+
+.icon-password {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 20px;
+  color: #4d8dff;
 }
 
 .card-button {

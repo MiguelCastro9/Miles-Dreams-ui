@@ -12,7 +12,6 @@ import {
   IonInput,
   IonSelect,
   IonSelectOption,
-  IonInputPasswordToggle,
   IonToast,
   IonSpinner,
   IonModal,
@@ -22,7 +21,7 @@ import {
   IonTitle,
   IonInputOtp,
 } from "@ionic/vue";
-import { searchSharp } from "ionicons/icons";
+import { searchSharp, eyeOutline, eyeOffOutline } from "ionicons/icons";
 
 const props = defineProps({
   showModalRecoverPassword: Boolean
@@ -41,6 +40,7 @@ const checkSecoundQuestionAnswer = ref("");
 const checkTrirdQuestion = ref("");
 const checkTrirdQuestionAnswer = ref("");
 const confirmPassword = ref("");
+const showPassword = ref(false);
 const message = ref();
 const showToast = ref(false);
 
@@ -166,6 +166,10 @@ const passwordRules = computed(() => {
 const isStepThreeRecoverPassowordValid = computed(() =>
   passwordRules.value.every((rule) => rule.valid)
 );
+
+function togglePassword() {
+  showPassword.value = !showPassword.value;
+}
 </script>
 
 <template>
@@ -181,7 +185,7 @@ const isStepThreeRecoverPassowordValid = computed(() =>
     </ion-header>
     <ion-content class="ion-padding">
       <h5 class="modal-title">Por questões de segurança, por favor preencha as informações abaixo:</h5>
-      <div v-if="stepRecoverPassword === 1">
+      <div class="card-form" v-if="stepRecoverPassword === 1">
         <p class="label-text">Qual o seu e-mail cadastrado ?</p>
         <ion-item class="custom-input" lines="none">
           <ion-input
@@ -264,7 +268,7 @@ const isStepThreeRecoverPassowordValid = computed(() =>
       </div>
       
       <!-- ##################### STEP 2 ##################### -->
-      <div v-if="stepRecoverPassword === 2">
+      <div class="card-form" v-if="stepRecoverPassword === 2">
         <p class="label-text">Enviamos um um e-mail para {{ param.email }} para validação de código.</p>
         <ion-input-otp>Não recebeu o código ? <span>Reenviar código</span></ion-input-otp>
         <ion-button
@@ -278,28 +282,29 @@ const isStepThreeRecoverPassowordValid = computed(() =>
       </div>
 
       <!-- ##################### STEP 3 ##################### -->
-      <div v-if="stepRecoverPassword === 3">
+      <div class="card-form" v-if="stepRecoverPassword === 3">
         <ion-item class="custom-input" lines="none">
           <ion-input
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             placeholder="* Senha"
             :maxlength="100"
             v-model="param.password"
             class="input-field"
           >
-            <ion-input-password-toggle slot="end" />
           </ion-input>
         </ion-item>
 
         <ion-item class="custom-input" lines="none">
           <ion-input
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             placeholder="* Confime a senha"
             :maxlength="100"
             v-model="confirmPassword"
             class="input-field"
           >
-            <ion-input-password-toggle slot="end" />
+            <div slot="end" class="icon-password" @click="togglePassword">
+              <ion-icon :icon="showPassword ? eyeOutline : eyeOffOutline" ></ion-icon>
+            </div>
           </ion-input>
         </ion-item>
 
@@ -337,10 +342,24 @@ const isStepThreeRecoverPassowordValid = computed(() =>
 </template>
 
 <style scoped>
+.card-form {
+  margin-bottom: 24px;
+  width: 100%;
+}
+
 .spinner-container {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.icon-password {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 20px;
+  color: #4d8dff;
 }
 
 .password-rules-list {
