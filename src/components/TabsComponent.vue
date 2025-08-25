@@ -1,12 +1,21 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { IonTabBar, IonTabButton, IonTabs, IonPage, IonRouterOutlet } from '@ionic/vue';
+import { ref, onMounted } from "vue";
+import { IonTabBar, IonTabButton, IonTabs, IonPage, IonRouterOutlet, IonLoading } from '@ionic/vue';
 import { Coin, Plane, MessageCircle } from '@vicons/tabler';
+
+const chatLoading = ref(true);
 
 onMounted(() => {
   (window as any)._digisac = {
     id: "84d56f00-ff50-4713-b3a5-deaa60189554",
+    payload: {
+      contact: {
+        name: "João Silva",
+        email: "joao.silva@gmail.com"
+      }
+    }
   };
+
 
   const script = document.createElement("script");
   script.src = "https://webchat.digisac.app/embedded.js";
@@ -25,6 +34,7 @@ onMounted(() => {
       widgetContainer.style.opacity = "0";
       widgetContainer.style.pointerEvents = "auto";
     }
+    chatLoading.value = false;
   };
 });
 </script>
@@ -49,6 +59,12 @@ onMounted(() => {
 
       </ion-tab-bar>
     </ion-tabs>
+
+    <IonLoading
+      :is-open="chatLoading"
+      message="Carregando..."
+      spinner="crescent"
+    />
   </ion-page>
 </template>
 
@@ -70,6 +86,13 @@ ion-tab-bar {
   width: 26px;
   height: 26px;
 }
+
+  /* ion-loading {
+    --background: #e3edff;
+    --spinner-color: #3d72ed;
+
+    color: #1c6dff;
+  } */
 
 @media (prefers-color-scheme: dark) {
    .tabs {

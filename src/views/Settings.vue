@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonPage, IonContent, IonCard, IonCardTitle, IonList, IonItem, IonLabel } from '@ionic/vue';
 import NavbarComponent from '@/components/NavbarComponent.vue';
-import { Edit, Help, BuildingCommunity, Logout, User } from '@vicons/tabler';
+import { Edit, Logout, User } from '@vicons/tabler';
 import { ref, onMounted } from 'vue';
 
 const profileImage = ref<string | null>(null);
@@ -48,14 +48,6 @@ const handleLogout = () => {
         <ion-item button lines="none">
           <Edit class="icon-item" />
           <ion-label>Editar perfil</ion-label>
-        </ion-item>
-        <ion-item button lines="none">
-          <Help class="icon-item" />
-          <ion-label>Ajuda</ion-label>
-        </ion-item>
-        <ion-item button lines="none">
-          <BuildingCommunity class="icon-item" />
-          <ion-label>Sobre a Miles Dreams</ion-label>
         </ion-item>
         <ion-item button lines="none" @click="handleLogout">
           <Logout class="icon-item" />
